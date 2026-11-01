@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with lifetime sovereign premium access and aura preferences",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "premiumActive": { "type": "boolean" },
+        "buildType": { "type": "string" },
+        "themeAura": { "type": "string" },
+        "iconVariant": { "type": "string" },
+        "language": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "displayName", "premiumActive", "createdAt"]
+    },
+    "SecurityConfig": {
+      "title": "SecurityConfig",
+      "description": "User security configuration for Touch Guard, App Lock, GF Mode and Voice Personality",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "touchGuardArmed": { "type": "boolean" },
+        "motionSensitivity": { "type": "string" },
+        "sirenVolume": { "type": "integer" },
+        "warningVoice": { "type": "boolean" },
+        "warningVibration": { "type": "boolean" },
+        "warningSiren": { "type": "boolean" },
+        "warningFullScreen": { "type": "boolean" },
+        "appLockEnabled": { "type": "boolean" },
+        "gfModeEnabled": { "type": "boolean" },
+        "gfScoldText": { "type": "string" },
+        "biometricEnabled": { "type": "boolean" },
+        "autoLockTimeoutSeconds": { "type": "integer" },
+        "voicePersonality": { "type": "string" },
+        "voiceSpeed": { "type": "number" },
+        "fastResponse": { "type": "boolean" },
+        "naturalPause": { "type": "boolean" },
+        "emotionalTone": { "type": "boolean" },
+        "stealthFaceLock": { "type": "boolean" },
+        "intruderPhotoEnabled": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "touchGuardArmed", "appLockEnabled", "createdAt"]
+    },
+    "IncidentLog": {
+      "title": "IncidentLog",
+      "description": "Security incident log for touch breach, unauthorized app lock attempt or GF Mode scold",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "incidentType": { "type": "string" },
+        "details": { "type": "string" },
+        "severity": { "type": "string" },
+        "hasLocalPhoto": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "incidentType", "details", "timestamp"]
+    },
+    "CustomTrigger": {
+      "title": "CustomTrigger",
+      "description": "Trigger rule for automated security action based on hardware or schedule",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "triggerType": { "type": "string" },
+        "action": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "triggerType", "action", "enabled"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Root user profile document"
+    },
+    "/users/{userId}/securityConfig/current": {
+      "schema": { "$ref": "#/entities/SecurityConfig" },
+      "description": "User security preferences and settings"
+    },
+    "/users/{userId}/incidentLogs/{incidentId}": {
+      "schema": { "$ref": "#/entities/IncidentLog" },
+      "description": "Security audit logs for touch guard or lock attempts"
+    },
+    "/users/{userId}/customTriggers/{triggerId}": {
+      "schema": { "$ref": "#/entities/CustomTrigger" },
+      "description": "User defined triggers like headphones, screen, wifi"
+    }
+  }
+}

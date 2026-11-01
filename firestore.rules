@@ -1,0 +1,147 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             (!('email' in data) || data.email is string && data.email.size() <= 150) &&
+             data.premiumActive is bool &&
+             (!('buildType' in data) || data.buildType is string && data.buildType.size() <= 60) &&
+             (!('themeAura' in data) || data.themeAura is string && data.themeAura.size() <= 50) &&
+             (!('iconVariant' in data) || data.iconVariant is string && data.iconVariant.size() <= 50) &&
+             (!('language' in data) || data.language is string && data.language.size() <= 30);
+    }
+
+    function isValidSecurityConfig(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.touchGuardArmed is bool &&
+             data.appLockEnabled is bool &&
+             (!('motionSensitivity' in data) || data.motionSensitivity is string && data.motionSensitivity.size() <= 40) &&
+             (!('sirenVolume' in data) || data.sirenVolume is int && data.sirenVolume >= 0 && data.sirenVolume <= 100) &&
+             (!('warningVoice' in data) || data.warningVoice is bool) &&
+             (!('warningVibration' in data) || data.warningVibration is bool) &&
+             (!('warningSiren' in data) || data.warningSiren is bool) &&
+             (!('warningFullScreen' in data) || data.warningFullScreen is bool) &&
+             (!('gfModeEnabled' in data) || data.gfModeEnabled is bool) &&
+             (!('gfScoldText' in data) || data.gfScoldText is string && data.gfScoldText.size() <= 500) &&
+             (!('biometricEnabled' in data) || data.biometricEnabled is bool) &&
+             (!('autoLockTimeoutSeconds' in data) || data.autoLockTimeoutSeconds is int) &&
+             (!('voicePersonality' in data) || data.voicePersonality is string && data.voicePersonality.size() <= 50) &&
+             (!('voiceSpeed' in data) || (data.voiceSpeed is number)) &&
+             (!('fastResponse' in data) || data.fastResponse is bool) &&
+             (!('naturalPause' in data) || data.naturalPause is bool) &&
+             (!('emotionalTone' in data) || data.emotionalTone is bool) &&
+             (!('stealthFaceLock' in data) || data.stealthFaceLock is bool) &&
+             (!('intruderPhotoEnabled' in data) || data.intruderPhotoEnabled is bool);
+    }
+
+    function isValidIncidentLog(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.incidentType is string && data.incidentType.size() <= 60 &&
+             data.details is string && data.details.size() <= 1000 &&
+             (!('severity' in data) || data.severity is string && data.severity.size() <= 30) &&
+             (!('hasLocalPhoto' in data) || data.hasLocalPhoto is bool);
+    }
+
+    function isValidCustomTrigger(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() <= 100 &&
+             data.triggerType is string && data.triggerType.size() <= 50 &&
+             data.action is string && data.action.size() <= 200 &&
+             data.enabled is bool;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) && isValidId(userId) &&
+                       incoming().userId == userId &&
+                       incoming().keys().hasAll(['userId', 'displayName', 'premiumActive', 'createdAt']) &&
+                       incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                       isValidUserProfile(incoming());
+
+      allow update: if isOwner(userId) && isValidId(userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (!('updatedAt' in incoming()) || incoming().updatedAt is timestamp) &&
+                       isValidUserProfile(incoming());
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      // Subcollection: securityConfig
+      match /securityConfig/{configId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(configId) &&
+                         incoming().userId == userId &&
+                         incoming().keys().hasAll(['userId', 'touchGuardArmed', 'appLockEnabled', 'createdAt']) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         isValidSecurityConfig(incoming());
+
+        allow update: if isOwner(userId) && isValidId(configId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         (!('updatedAt' in incoming()) || incoming().updatedAt is timestamp) &&
+                         isValidSecurityConfig(incoming());
+
+        allow delete: if isOwner(userId) && isValidId(configId);
+      }
+
+      // Subcollection: incidentLogs
+      match /incidentLogs/{incidentId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(incidentId) &&
+                         incoming().userId == userId &&
+                         incoming().keys().hasAll(['userId', 'incidentType', 'details', 'timestamp']) &&
+                         incoming().timestamp is timestamp && incoming().timestamp <= request.time &&
+                         isValidIncidentLog(incoming());
+
+        allow delete: if isOwner(userId) && isValidId(incidentId);
+      }
+
+      // Subcollection: customTriggers
+      match /customTriggers/{triggerId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(triggerId) &&
+                         incoming().userId == userId &&
+                         incoming().keys().hasAll(['userId', 'title', 'triggerType', 'action', 'enabled']) &&
+                         isValidCustomTrigger(incoming());
+
+        allow update: if isOwner(userId) && isValidId(triggerId) &&
+                         incoming().userId == existing().userId &&
+                         isValidCustomTrigger(incoming());
+
+        allow delete: if isOwner(userId) && isValidId(triggerId);
+      }
+    }
+  }
+}
