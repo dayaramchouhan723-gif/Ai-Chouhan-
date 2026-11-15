@@ -1,38 +1,38 @@
-# CHOUHAN STAR v1.0 — 100% Free Forever Original Edition
+# CHOUHAN STAR v2.2.8 (Code 228) — Personal Sovereign AI & Security Companion
 
-**By Commander Dayaram Chouhan**
-
-## 📥 Direct APK Download & Install
-- **APK Filename:** `CHOUHAN-STAR-v1.0-by-Dayaram-Chouhan.apk`
-- `isPremium = true` hardcoded (Zero payment, 100% Free Forever).
-- On Android, enable **Install unknown apps** for your browser/file manager, open the APK and tap **Install** — Lifetime Free Sovereign Access.
+**Built by Dayaram Chouhan — 100% Free Forever • Single User Personal Lifetime Edition • No Ads • No Tracking**
 
 ---
 
-## 🛡️ Features — 12 Screens Original + Advanced Additions
-1. **Command Dashboard (`DashboardScreen`)**: Real-time threat shield, 1-tap emergency lock, intruder telemetry.
-2. **Aura Control (`AuraControlScreen`)**: 4 glowing wireframe star icon variants (Crimson, Gold, Cyan, Emerald) and dynamic live wallpapers with haptic feedback & Aura Border Stealth Mode.
-3. **GF Mode Scold Engine (`GfModeScreen`)**: Instant Hinglish audio scolds ("Khabardar phone chhua toh!"), vibration burst, and stealth intruder selfie saved locally.
-4. **Touch Guard Siren (`TouchGuardScreen`)**: High-precision accelerometer theft detection with armed siren and volume control.
-5. **App Lock Engine (`AppLockScreen`)**: Local PIN + Biometric app lock with individual app toggles.
-6. **Face Setup (`FaceSetupScreen`)**: 3-angle local facial biometric enrollment using front camera and Keystore.
-7. **API & Cloud Vault (`ApiScreen`)**: Hardware-encrypted API keys (Gemini, Groq, OpenAI, Claude) stored securely via Android Keystore.
-8. **World Model Engine (`WorldModelScreen`)**: On-device activity pattern learning, trusted contacts, and device profiling.
-9. **Triggers Hub (`TriggersScreen`)**: 77+ custom hardware & automation triggers with Samsung OneUI & Android 7-15 support.
-10. **System Notifications & Storage (`NotificationsScreen`)**: Call announcements and local cache cleaner.
-11. **Social Agent, Maps & Tools (`SocialMapManagerScreen`)**: IG, FB, WA status post agent, Maps coordinate radar, local screenshot tool, and PC Connect File Manager (`Pictures/CHOUHAN_STAR/`).
-12. **Quick Actions & Voice Visualizer ("Hey Chouhan" / "Hey Myra")**: Deep Research & Image Search quick actions, live audio waveform visualizer, and status bar lock orb.
+## Key Capabilities
+
+- **Native Kotlin + Jetpack Compose Architecture**: Built 100% natively with Gradle (`com.chouhan.star.security`, `versionCode = 228`, `versionName = "2.2.8"`).
+- **Voice Focus Mode (`#000000` Pure Black) & Live Human Avatar Engine**: Tap the Mic orb anywhere to enter distraction-free full-screen black Voice Focus with real-time chest breathing, head-tilt emotion states, blinking frames, yellow Hinglish subtitles, barge-in speech interruption, and 10-second idle check-in.
+- **4x4 Live Avatar Gallery**: 22 real avatar portraits across ZARA Black Blazer, MAYA Emerald Gown, Anime Silver, and Neon Cyber categories.
+- **32 Studio Voices + Multi-Language Engine**: Hinglish, Hindi, Urdu, Roman Urdu, Sindhi, Dhatki, Punjabi, and English with configurable Pitch (`1.2` default) & Speed (`0.9` default), Pocket TTS modes, and Always-Listening Wake Word (`OFF` by default for privacy — supports *"Hey Sanam suno"*, *"Hey Zara suno"*, *"Hey Chouhan Star suno"*, *"Wake up Sanam"*, *"Bolo Hello"*).
+- **Hybrid AI Brain Router (1s Auto-Failover)**:
+  1. Firebase AI Logic (`gemini-3.8-flash` / `gemini-3.5-flash-lite`)
+  2. Groq Llama 3.3 70B (`api.groq.com`)
+  3. DeepSeek Reasoning (`api.deepseek.com`)
+  4. OpenRouter Free Backup (`openrouter.ai`)
+  5. Ollama Local LAN Endpoint (`http://127.0.0.1:11434`)
+  6. Offline Local Intents JSON Brain (guaranteed response with zero internet)
+- **AES-256-GCM Encrypted Vault & Touch Guard**: Numeric PIN pad (`1–9 / BIO / 0 / DEL`), 3x wrong PIN -> 30-second cooldown lockout + ZARA voice warning, Fake Decoy Vault mode, blur previews, Android Photo Picker integration (zero broad storage permissions), Touch & Motion Guard Siren, App Lock + GF Mode, and local-only capture folder `Pictures/CHOUHAN_STAR/`.
+- **24 Interactive Tools & Safety Guard**: Teacher Mode (*"Samjhao"* + 5/5 Practice Quiz), 1-Command 6-Task Meeting Orchestrator, Spotify ↔ YouTube song switcher, DeepSearch, Reverse Engineering / Diagram generator, Broker Watchlist (Draft Only), Gmail Drafts, Privacy & JSON Backup export/import, and explicit Allow/Deny confirmation overlays before Pay / Send / Delete actions.
+- **In-App Google Sign-In & Offline Guest Mode**: Instant Welcome -> PIN Setup -> Home entry with Google Credential Manager Sign-In available anytime inside the Profile screen.
 
 ---
 
-## 🔒 Security & Privacy Invariants
-- **100% Offline Security**: PIN encrypted, Face Keystore, intruder photos & screenshots saved local only in `Pictures/CHOUHAN_STAR/` — No internet required, no cloud uploads.
+## Build & Verify Locally
 
----
+```bash
+gradle :app:testDebugUnitTest
+gradle assembleDebug
+```
 
-## 📦 Source Code & Assets
-- Full source code included in `CHOUHAN_STAR_Source.zip`.
-- Pre-built signed APK: `CHOUHAN-STAR-v1.0-by-Dayaram-Chouhan.apk`.
+## Privacy & Security
 
----
+- API keys and PIN hashes are encrypted on-device with Android Keystore (`EncryptedSharedPreferences` AES-256-GCM).
+- Always Listening Wake Word is **OFF** by default; Camera is **OFF** by default; financial/messaging/delete actions strictly require explicit confirmation.
+
 *॥ JAI SHRI RAM ॥*

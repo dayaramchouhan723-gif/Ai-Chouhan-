@@ -65,12 +65,17 @@ fun ApiScreen(
 
     var geminiInput by remember(uiState.geminiKey) { mutableStateOf(uiState.geminiKey) }
     var groqInput by remember(uiState.groqKey) { mutableStateOf(uiState.groqKey) }
+    var deepSeekInput by remember(uiState.deepSeekKey) { mutableStateOf(uiState.deepSeekKey) }
+    var openRouterInput by remember(uiState.openRouterKey) { mutableStateOf(uiState.openRouterKey) }
+    var ollamaInput by remember(uiState.ollamaUrl) { mutableStateOf(uiState.ollamaUrl) }
     var openAiInput by remember(uiState.openAiKey) { mutableStateOf(uiState.openAiKey) }
     var claudeInput by remember(uiState.claudeKey) { mutableStateOf(uiState.claudeKey) }
     var customUrlInput by remember(uiState.customApiUrl) { mutableStateOf(uiState.customApiUrl) }
 
     var isGeminiVisible by remember { mutableStateOf(false) }
     var isGroqVisible by remember { mutableStateOf(false) }
+    var isDeepSeekVisible by remember { mutableStateOf(false) }
+    var isOpenRouterVisible by remember { mutableStateOf(false) }
     var isOpenAiVisible by remember { mutableStateOf(false) }
     var isClaudeVisible by remember { mutableStateOf(false) }
 
@@ -99,20 +104,21 @@ fun ApiScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
-                    text = "API & Cloud Vault",
+                    text = "AI Router & Cloud Vault",
                     color = Color.White,
-                    fontSize = 22.sp,
+                    fontSize = 21.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Encrypted LLM keys & endpoints",
-                    color = TextGrey,
-                    fontSize = 12.sp
+                    text = "Active: ${uiState.activeBrainProvider} • Auto-Failover 1s",
+                    color = Color(0xFF00E676),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         if (!uiState.statusMessage.isNullOrBlank()) {
             Card(
@@ -135,7 +141,7 @@ fun ApiScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Card 1: API Keys
+            // Card 1: AI Router Encrypted API Keys + Live Green/Red Test Status
             item {
                 Card(
                     modifier = Modifier
@@ -150,7 +156,7 @@ fun ApiScreen(
                             Icon(imageVector = Icons.Default.Key, contentDescription = null, tint = CrimsonAura, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "LLM API Keys (Encrypted)",
+                                text = "AI Router Keys (AES-256 Encrypted)",
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
@@ -159,35 +165,76 @@ fun ApiScreen(
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Gemini Key Field
                         ApiKeyField(
-                            label = "Gemini API Key",
+                            label = "Gemini API Key (Firebase AI Logic + Backup)",
                             value = geminiInput,
                             onValueChange = { geminiInput = it },
-                            placeholder = "AIzaSy...",
+                            placeholder = "AIzaSy... (or use zero-key AI Logic)",
                             isVisible = isGeminiVisible,
                             onToggleVisibility = { isGeminiVisible = !isGeminiVisible },
+                            statusPair = uiState.apiTestStatuses["gemini"],
                             onTestAndSave = { viewModel.testAndSaveApiKey("gemini", geminiInput) },
                             testTag = "gemini_key_field"
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Groq Key Field
                         ApiKeyField(
-                            label = "Groq API Key",
+                            label = "Groq Llama 3.3 70B API Key",
                             value = groqInput,
                             onValueChange = { groqInput = it },
                             placeholder = "gsk_...",
                             isVisible = isGroqVisible,
                             onToggleVisibility = { isGroqVisible = !isGroqVisible },
+                            statusPair = uiState.apiTestStatuses["groq"],
                             onTestAndSave = { viewModel.testAndSaveApiKey("groq", groqInput) },
                             testTag = "groq_key_field"
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // OpenAI Key Field
+                        ApiKeyField(
+                            label = "DeepSeek Reasoning API Key",
+                            value = deepSeekInput,
+                            onValueChange = { deepSeekInput = it },
+                            placeholder = "sk-...",
+                            isVisible = isDeepSeekVisible,
+                            onToggleVisibility = { isDeepSeekVisible = !isDeepSeekVisible },
+                            statusPair = uiState.apiTestStatuses["deepseek"],
+                            onTestAndSave = { viewModel.testAndSaveApiKey("deepseek", deepSeekInput) },
+                            testTag = "deepseek_key_field"
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        ApiKeyField(
+                            label = "OpenRouter FREE Backup Key",
+                            value = openRouterInput,
+                            onValueChange = { openRouterInput = it },
+                            placeholder = "sk-or-v1-...",
+                            isVisible = isOpenRouterVisible,
+                            onToggleVisibility = { isOpenRouterVisible = !isOpenRouterVisible },
+                            statusPair = uiState.apiTestStatuses["openrouter"],
+                            onTestAndSave = { viewModel.testAndSaveApiKey("openrouter", openRouterInput) },
+                            testTag = "openrouter_key_field"
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        ApiKeyField(
+                            label = "Ollama Local Endpoint URL (Offline LAN)",
+                            value = ollamaInput,
+                            onValueChange = { ollamaInput = it },
+                            placeholder = "http://127.0.0.1:11434",
+                            isVisible = true,
+                            onToggleVisibility = {},
+                            statusPair = uiState.apiTestStatuses["ollama"],
+                            onTestAndSave = { viewModel.testAndSaveApiKey("ollama", ollamaInput) },
+                            testTag = "ollama_url_field"
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
                         ApiKeyField(
                             label = "OpenAI API Key",
                             value = openAiInput,
@@ -195,13 +242,13 @@ fun ApiScreen(
                             placeholder = "sk-proj-...",
                             isVisible = isOpenAiVisible,
                             onToggleVisibility = { isOpenAiVisible = !isOpenAiVisible },
+                            statusPair = uiState.apiTestStatuses["openai"],
                             onTestAndSave = { viewModel.testAndSaveApiKey("openai", openAiInput) },
                             testTag = "openai_key_field"
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Claude Key Field
                         ApiKeyField(
                             label = "Claude API Key",
                             value = claudeInput,
@@ -209,6 +256,7 @@ fun ApiScreen(
                             placeholder = "sk-ant-...",
                             isVisible = isClaudeVisible,
                             onToggleVisibility = { isClaudeVisible = !isClaudeVisible },
+                            statusPair = uiState.apiTestStatuses["claude"],
                             onTestAndSave = { viewModel.testAndSaveApiKey("claude", claudeInput) },
                             testTag = "claude_key_field"
                         )
@@ -244,11 +292,19 @@ fun ApiScreen(
 
                         Spacer(modifier = Modifier.height(14.dp))
 
+                        val offlinePair = uiState.apiTestStatuses["offline"]
+                        Text(
+                            text = "Offline Fallback Status: ${offlinePair?.second ?: "GREEN • Local JSON Brain Active"}",
+                            color = Color(0xFF00E676),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.Lock, contentDescription = null, tint = TextGrey, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "All keys stored securely via EncryptedSharedPreferences",
+                                text = "All keys stored securely via EncryptedSharedPreferences AES-256",
                                 color = TextGrey,
                                 fontSize = 12.sp
                             )
@@ -330,11 +386,26 @@ private fun ApiKeyField(
     placeholder: String,
     isVisible: Boolean,
     onToggleVisibility: () -> Unit,
+    statusPair: Pair<Boolean, String>? = null,
     onTestAndSave: () -> Unit,
     testTag: String
 ) {
     Column {
-        Text(text = label, color = TextGrey, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = label, color = TextGrey, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            if (statusPair != null) {
+                Text(
+                    text = if (statusPair.first) "GREEN ✓" else "RED ✕",
+                    color = if (statusPair.first) Color(0xFF00E676) else CrimsonAura,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
             value = value,
@@ -370,6 +441,14 @@ private fun ApiKeyField(
                 unfocusedTextColor = Color.White
             )
         )
+        if (statusPair != null) {
+            Text(
+                text = statusPair.second,
+                color = if (statusPair.first) Color(0xFF00E676) else CrimsonAura,
+                fontSize = 10.sp,
+                modifier = Modifier.padding(top = 3.dp)
+            )
+        }
     }
 }
 

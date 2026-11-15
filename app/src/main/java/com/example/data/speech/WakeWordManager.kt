@@ -16,13 +16,15 @@ interface WakeWordListener {
     fun onRmsChanged(rmsDb: Float)
     fun onListeningStateChanged(isListening: Boolean)
     fun onSpeechRecognized(text: String)
+    fun onBeginningOfUserSpeech() {}
     fun onError(errorMessage: String)
 }
 
 /**
- * High-performance, resilient on-device Wake Word detection engine for "Hey Myra".
- * Utilizes Android SpeechRecognizer with automatic continuous loop recovery,
- * partial result analysis, and trailing command extraction.
+ * On-device Wake Word & Streaming Speech detection engine for CHOUHAN STAR / SANAM / ZARA.
+ * Supports: Hey Sanam suno, Hey Zara suno, Hey Maya suno, Hey Zoya suno,
+ * Hey Ultron suno, Hey Chouhan Star suno, WAKE UP SANAM, BOLO HELLO.
+ * Always-listening is OFF by default until toggled ON by user.
  */
 class WakeWordManager(
     private val context: Context,
@@ -36,25 +38,33 @@ class WakeWordManager(
     private var isCurrentlyListening = false
     private var lastTriggerTimestamp = 0L
 
-    // Wake word variants in Hinglish & English
-    private val wakeWords = listOf(
-        "hey myra",
-        "hi myra",
-        "hay myra",
-        "he myra",
-        "sun myra",
-        "namaste myra",
-        "ok myra",
-        "okay myra",
-        "hey mira",
-        "hi mira",
-        "myra",
-        "mira"
+    val wakeWords = listOf(
+        "hey chouhan star suno",
+        "hey sanam suno",
+        "hey zara suno",
+        "hey maya suno",
+        "hey zoya suno",
+        "hey ultron suno",
+        "wake up sanam",
+        "bolo hello",
+        "hey sanam",
+        "hi sanam",
+        "sun sanam",
+        "namaste sanam",
+        "salam sanam",
+        "ok sanam",
+        "hey zara",
+        "hi zara",
+        "zara suno",
+        "hey chouhan",
+        "chouhan star",
+        "sanam",
+        "zara"
     )
 
     private val recognitionIntent: Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "hi-IN")
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-IN")
         putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, false)
         putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
@@ -69,7 +79,7 @@ class WakeWordManager(
         }
 
         override fun onBeginningOfSpeech() {
-            // User began speaking
+            listener.onBeginningOfUserSpeech()
         }
 
         override fun onRmsChanged(rmsdB: Float) {
@@ -82,7 +92,9 @@ class WakeWordManager(
         override fun onEndOfSpeech() {
             isCurrentlyListening = false
             listener.onListeningStateChanged(false)
-            scheduleRestart(250)
+            if (isContinuousListeningEnabled) {
+                scheduleRestart(250)
+            }
         }
 
         override fun onError(error: Int) {
@@ -91,7 +103,6 @@ class WakeWordManager(
             val message = getErrorText(error)
             Log.d(tag, "SpeechRecognizer error: $error ($message)")
 
-            // Restart listening if continuous mode is enabled
             if (isContinuousListeningEnabled) {
                 val delay = when (error) {
                     SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> 600L
@@ -131,8 +142,7 @@ class WakeWordManager(
 
     private fun processHypotheses(hypotheses: List<String>) {
         val now = System.currentTimeMillis()
-        if (now - lastTriggerTimestamp < 2200L) {
-            // Debounce to prevent multi-fire on same utterance
+        if (now - lastTriggerTimestamp < 1800L) {
             return
         }
 
@@ -160,6 +170,14 @@ class WakeWordManager(
         }
     }
 
+    fun startSingleUtterance() {
+        mainHandler.post {
+            isContinuousListeningEnabled = false
+            ensureRecognizer()
+            safeStartListeningSingle()
+        }
+    }
+
     fun stopListening() {
         mainHandler.post {
             isContinuousListeningEnabled = false
@@ -175,7 +193,7 @@ class WakeWordManager(
         }
     }
 
-    fun simulateWakeWord(phrase: String = "Hey Myra", trailingCommand: String? = null) {
+    fun simulateWakeWord(phrase: String = "Hey Sanam", trailingCommand: String? = null) {
         mainHandler.post {
             listener.onSpeechRecognized("$phrase ${trailingCommand ?: ""}".trim())
             listener.onWakeWordDetected(phrase, trailingCommand)
@@ -210,6 +228,17 @@ class WakeWordManager(
         } catch (e: Exception) {
             Log.e(tag, "Error in safeStartListening", e)
             scheduleRestart(1000)
+        }
+    }
+
+    private fun safeStartListeningSingle() {
+        try {
+            ensureRecognizer()
+            speechRecognizer?.startListening(recognitionIntent)
+            isCurrentlyListening = true
+            listener.onListeningStateChanged(true)
+        } catch (e: Exception) {
+            Log.e(tag, "Error starting single speech listen", e)
         }
     }
 

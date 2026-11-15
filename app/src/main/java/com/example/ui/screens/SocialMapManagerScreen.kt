@@ -64,8 +64,8 @@ fun SocialMapManagerScreen(
     var socialMessage by remember { mutableStateOf("॥ Jai Shri Ram ॥ Sovereign Security Active - Chouhan Star Star Build") }
     var groqPromptInput by remember { mutableStateOf("Summarize device security status in JSON format") }
     var groqOutputResult by remember { mutableStateOf("") }
-    var latitudeInput by remember { mutableStateOf("28.6139") }
-    var longitudeInput by remember { mutableStateOf("77.2090") }
+    var latitudeInput by remember(uiState.mapLatitude) { mutableStateOf(uiState.mapLatitude.toString()) }
+    var longitudeInput by remember(uiState.mapLongitude) { mutableStateOf(uiState.mapLongitude.toString()) }
 
     Column(
         modifier = Modifier

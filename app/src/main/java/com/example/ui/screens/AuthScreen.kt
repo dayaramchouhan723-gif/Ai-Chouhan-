@@ -3,6 +3,8 @@ package com.example.ui.screens
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,33 +18,28 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -54,49 +51,39 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import com.example.R
 import com.example.ui.components.WireframeStar
+import com.example.ui.theme.AmoledBlack
 import com.example.ui.theme.BorderDark
 import com.example.ui.theme.CrimsonPrimary
-import com.example.ui.theme.ObsidianDark
+import com.example.ui.theme.GlassCardColor
+import com.example.ui.theme.NeonBlue
 import com.example.ui.theme.StarGold
-import com.example.ui.theme.SurfaceCard
 import com.example.ui.theme.TextGrey
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Welcome Screen (PATCH 1):
+ * Strictly offline-first friendly: shows Logo + Red Star + SANAM Orb +
+ * "Built by Dayaram Chouhan - Free Lifetime" + ONLY two clean actions:
+ * [Continue] and [Continue Without Login / Skip]. Both go straight to PIN Setup -> Home.
+ * Google Sign-In happens inside the app on the Profile Screen.
+ */
 @Composable
 fun AuthScreen(
-    onAuthSuccess: () -> Unit
+    onAuthSuccess: () -> Unit,
+    onContinueWithoutLogin: () -> Unit = onAuthSuccess
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val credentialManager = remember { CredentialManager.create(context) }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    // Attempt silent auto-sign-in on startup
-    LaunchedEffect(Unit) {
-        attemptAutoSignIn(
-            context = context,
-            credentialManager = credentialManager,
-            onAuthSuccess = onAuthSuccess,
-            onUnauthenticated = { /* Wait for user click */ },
-            scope = scope
-        )
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ObsidianDark)
+            .background(AmoledBlack)
             .padding(24.dp)
             .testTag("auth_screen"),
         contentAlignment = Alignment.Center
@@ -104,130 +91,130 @@ fun AuthScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         ) {
-            // Sacred Star Badge
-            WireframeStar(
-                size = 140.dp,
-                variant = "Crimson Wireframe Star",
-                primaryColor = CrimsonPrimary,
-                glowColor = Color(0xFFFF4D4D),
-                animated = true
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.img_chouhan_star_icon),
+                    contentDescription = "CHOUHAN STAR Logo",
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .border(1.5.dp, CrimsonPrimary, CircleShape)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                WireframeStar(
+                    size = 42.dp,
+                    primaryColor = CrimsonPrimary,
+                    glowColor = CrimsonPrimary,
+                    animated = true
+                )
+            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(134.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF101324))
+                    .border(2.dp, NeonBlue, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.avatar_zara_open),
+                    contentDescription = "SANAM AI Orb & ZARA",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
 
             Text(
-                text = "CHOUHAN STAR ⭐",
+                text = "Welcome to CHOUHAN STAR",
                 color = Color.White,
-                fontSize = 26.sp,
+                fontSize = 23.sp,
                 fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.sp
+                textAlign = TextAlign.Center
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Personal Lifetime Security Guard",
+                text = "SANAM AI • ZARA • Built by Dayaram Chouhan - Free Lifetime",
                 color = StarGold,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.sp
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 4.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Security Capabilities Badges
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(SurfaceCard, RoundedCornerShape(16.dp))
+                    .background(GlassCardColor, RoundedCornerShape(16.dp))
                     .border(1.dp, BorderDark, RoundedCornerShape(16.dp))
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                FeatureBadge(icon = Icons.Default.Shield, title = "Touch & Motion Guard", subtitle = "Anti-Theft Realtime Siren & Haptic Alert")
+                FeatureBadge(icon = Icons.Default.Shield, title = "Touch & Motion Guard", subtitle = "Anti-Theft Realtime Siren & Local Snapshot")
                 FeatureBadge(icon = Icons.Default.Lock, title = "Military App Lock + GF Mode", subtitle = "PIN, Biometrics & Custom Scold Engine")
-                FeatureBadge(icon = Icons.Default.Star, title = "Aura Control & AI Personality", subtitle = "4 Star Variants, Live Wallpapers, Hinglish Voice")
+                FeatureBadge(icon = Icons.Default.Star, title = "Voice Focus + Live ZARA + 24 Tools", subtitle = "100% Free Forever • Works Completely Offline")
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
-            if (errorMessage != null) {
-                Text(
-                    text = errorMessage ?: "",
-                    color = Color(0xFFFF5252),
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-            }
-
-            // Interactive Google Sign-In Button
+            // Primary Continue -> PIN Setup -> Home
             Button(
-                onClick = {
-                    isLoading = true
-                    errorMessage = null
-                    onGoogleSignInClicked(
-                        context = context,
-                        credentialManager = credentialManager,
-                        onAuthSuccess = {
-                            isLoading = false
-                            onAuthSuccess()
-                        },
-                        onAuthError = { err ->
-                            isLoading = false
-                            errorMessage = err
-                        },
-                        scope = scope,
-                        onAuthCancelled = {
-                            isLoading = false
-                        }
-                    )
-                },
+                onClick = onContinueWithoutLogin,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp)
-                    .testTag("google_sign_in_button"),
+                    .height(52.dp)
+                    .testTag("welcome_continue_button"),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CrimsonPrimary,
                     contentColor = Color.White
-                ),
-                enabled = !isLoading
+                )
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color.White,
-                        strokeWidth = 2.5.dp
-                    )
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "G",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Sign in with Google",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
-                }
+                Text(
+                    text = "Continue",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Secondary Skip -> PIN Setup -> Home (Offline badge)
+            OutlinedButton(
+                onClick = onContinueWithoutLogin,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .testTag("skip_login_offline_button"),
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.2.dp, TextGrey),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+            ) {
+                Text(
+                    text = "Continue Without Login / Skip",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextGrey
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = "Lifetime Sovereign Cloud Sync & Local Encryption",
+                text = "You can sign in with Google anytime inside Profile • No Ads • No Tracking",
                 color = TextGrey,
                 fontSize = 11.sp,
                 textAlign = TextAlign.Center
@@ -237,88 +224,21 @@ fun AuthScreen(
 }
 
 @Composable
-private fun FeatureBadge(
-    icon: ImageVector,
-    title: String,
-    subtitle: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
+private fun FeatureBadge(icon: ImageVector, title: String, subtitle: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
-                .size(36.dp)
-                .background(Color(0xFF2A1016), CircleShape)
+                .size(34.dp)
+                .background(Color(0xFF221426), CircleShape)
                 .border(1.dp, CrimsonPrimary.copy(alpha = 0.5f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = CrimsonPrimary,
-                modifier = Modifier.size(18.dp)
-            )
+            Icon(imageVector = icon, contentDescription = null, tint = CrimsonPrimary, modifier = Modifier.size(17.dp))
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column {
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = subtitle,
-                color = TextGrey,
-                fontSize = 11.sp
-            )
-        }
-    }
-}
-
-fun attemptAutoSignIn(
-    context: Context,
-    credentialManager: CredentialManager,
-    onAuthSuccess: () -> Unit,
-    onUnauthenticated: () -> Unit,
-    scope: CoroutineScope
-) {
-    if (Firebase.auth.currentUser != null) {
-        onAuthSuccess()
-        return
-    }
-    val clientId = try {
-        context.getString(R.string.default_web_client_id)
-    } catch (e: Exception) {
-        onUnauthenticated()
-        return
-    }
-
-    val googleIdOption = GetGoogleIdOption.Builder()
-        .setFilterByAuthorizedAccounts(true)
-        .setServerClientId(clientId)
-        .setAutoSelectEnabled(true)
-        .build()
-
-    val request = GetCredentialRequest.Builder()
-        .addCredentialOption(googleIdOption)
-        .build()
-
-    scope.launch {
-        try {
-            val result = credentialManager.getCredential(context, request)
-            val credential = result.credential
-            if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
-                val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
-                Firebase.auth.signInWithCredential(authCredential).await()
-                onAuthSuccess()
-            } else {
-                onUnauthenticated()
-            }
-        } catch (e: Exception) {
-            onUnauthenticated()
+            Text(text = title, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(text = subtitle, color = TextGrey, fontSize = 11.sp)
         }
     }
 }
@@ -326,7 +246,7 @@ fun attemptAutoSignIn(
 fun onGoogleSignInClicked(
     context: Context,
     credentialManager: CredentialManager,
-    onAuthSuccess: () -> Unit,
+    onAuthSuccess: (displayName: String, email: String) -> Unit,
     onAuthError: (String) -> Unit,
     scope: CoroutineScope,
     onAuthCancelled: () -> Unit = {}
@@ -334,7 +254,13 @@ fun onGoogleSignInClicked(
     val clientId = try {
         context.getString(R.string.default_web_client_id)
     } catch (e: Exception) {
-        onAuthError("Google Sign-In configuration missing: default_web_client_id not found")
+        onAuthError("Offline Mode — Google client unavailable locally")
+        return
+    }
+
+    val activity = context as? Activity
+    if (activity == null) {
+        onAuthError("In-app activity context unavailable")
         return
     }
 
@@ -343,22 +269,26 @@ fun onGoogleSignInClicked(
 
     scope.launch {
         try {
-            val result = credentialManager.getCredential(context as Activity, request)
+            val result = credentialManager.getCredential(activity, request)
             val credential = result.credential
             if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
-                val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
-                Firebase.auth.signInWithCredential(authCredential).await()
-                onAuthSuccess()
+                val idCred = GoogleIdTokenCredential.createFrom(credential.data)
+                val authCredential = GoogleAuthProvider.getCredential(idCred.idToken, null)
+                val authResult = Firebase.auth.signInWithCredential(authCredential).await()
+                val user = authResult.user
+                onAuthSuccess(
+                    user?.displayName ?: idCred.displayName ?: "Dayaram Chouhan",
+                    user?.email ?: idCred.id
+                )
             } else {
                 onAuthError("Unexpected credential type")
             }
         } catch (e: GetCredentialCancellationException) {
-            Log.w("Auth", "Google Sign-In flow cancelled or dismissed: ${e.message}", e)
+            Log.w("Auth", "Google Sign-In cancelled: ${e.message}")
             onAuthCancelled()
         } catch (e: Exception) {
-            Log.e("Auth", "Google Sign-In failed", e)
-            onAuthError(e.localizedMessage ?: "Sign in failed")
+            Log.e("Auth", "Google Sign-In offline/fallback: ${e.message}")
+            onAuthError(e.localizedMessage ?: "Offline Mode")
         }
     }
 }
@@ -369,7 +299,9 @@ fun userSignOut(
     onSignOutComplete: () -> Unit,
     scope: CoroutineScope
 ) {
-    Firebase.auth.signOut()
+    try {
+        Firebase.auth.signOut()
+    } catch (_: Exception) { }
     scope.launch {
         try {
             credentialManager.clearCredentialState(ClearCredentialStateRequest())

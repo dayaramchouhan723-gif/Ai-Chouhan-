@@ -117,7 +117,7 @@ fun PersonalityVoiceScreen(
 
         // Wake Word Engine Section
         Text(
-            text = "WAKE WORD ENGINE: HEY MYRA ⭐",
+            text = "WAKE WORD ENGINE: HEY SANAM ⭐",
             color = StarGold,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
@@ -175,7 +175,7 @@ fun PersonalityVoiceScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Wake Word: 'Hey Myra'",
+                                text = "Wake Word: 'Hey Sanam'",
                                 color = Color.White,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
@@ -222,7 +222,7 @@ fun PersonalityVoiceScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = if (uiState.isWakeWordListening)
-                                        "Listening Active: Speak 'Hey Myra'"
+                                        "Listening Active: Speak 'Hey Sanam'"
                                     else
                                         "Initializing Speech Recognizer...",
                                     color = if (uiState.isWakeWordListening) Color(0xFF00E676) else Color(0xFFFFB300),
@@ -282,9 +282,9 @@ fun PersonalityVoiceScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
-                                if (uiState.myraResponseText != null) {
+                                if (uiState.sanamResponseText != null) {
                                     Text(
-                                        text = uiState.myraResponseText ?: "",
+                                        text = uiState.sanamResponseText ?: "",
                                         color = Color.White,
                                         fontSize = 12.sp,
                                         modifier = Modifier.padding(top = 4.dp)
@@ -300,7 +300,7 @@ fun PersonalityVoiceScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Button(
-                            onClick = { viewModel.simulateWakeWord("Hey Myra") },
+                            onClick = { viewModel.simulateWakeWord("Hey Sanam") },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(38.dp)
@@ -310,11 +310,11 @@ fun PersonalityVoiceScreen(
                         ) {
                             Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(text = "TEST 'HEY MYRA'", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "TEST 'HEY SANAM'", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
-                            onClick = { viewModel.simulateWakeWord("Hey Myra", "status report") },
+                            onClick = { viewModel.simulateWakeWord("Hey Sanam", "status report") },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(38.dp)
@@ -344,10 +344,10 @@ fun PersonalityVoiceScreen(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         listOf(
-                            "\"Hey Myra, lock phone\"" to "Emergency breach lockdown",
-                            "\"Hey Myra, arm guard\"" to "Arms Touch Guard sensor",
-                            "\"Hey Myra, status report\"" to "Spoken security telemetry",
-                            "\"Hey Myra, activate crimson aura\"" to "Instant theme morph"
+                            "\"Hey Sanam, lock phone\"" to "Emergency breach lockdown",
+                            "\"Hey Sanam, arm guard\"" to "Arms Touch Guard sensor",
+                            "\"Hey Sanam, status report\"" to "Spoken security telemetry",
+                            "\"Hey Sanam, activate crimson aura\"" to "Instant theme morph"
                         ).forEach { (cmd, effect) ->
                             Row(
                                 modifier = Modifier

@@ -2,35 +2,11 @@ package com.example.ui.navigation
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -40,64 +16,71 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.ui.components.SanamFloatingDock
 import com.example.ui.screens.ApiScreen
 import com.example.ui.screens.ApiWorldModelScreen
 import com.example.ui.screens.AppLockScreen
 import com.example.ui.screens.AuraControlScreen
 import com.example.ui.screens.AuthScreen
+import com.example.ui.screens.AvatarGalleryScreen
+import com.example.ui.screens.BuildProtocolScreen
 import com.example.ui.screens.ChatListScreen
+import com.example.ui.screens.ClaudeCodeScreen
+import com.example.ui.screens.ControlDashboardScreen
 import com.example.ui.screens.DashboardScreen
+import com.example.ui.screens.DeveloperPanelScreen
 import com.example.ui.screens.FaceSetupScreen
+import com.example.ui.screens.FaceStudioScreen
+import com.example.ui.screens.FlowShiftDhaiScreen
 import com.example.ui.screens.GfModeScreen
+import com.example.ui.screens.GhostWorldScreen
 import com.example.ui.screens.IntruderAlarmOverlayScreen
+import com.example.ui.screens.LauncherScreen
+import com.example.ui.screens.LiaChatScreen
+import com.example.ui.screens.MarketplaceScreen
+import com.example.ui.screens.MemoryScreen
 import com.example.ui.screens.NotificationsScreen
-import com.example.ui.screens.NotificationsSystemScreen
+import com.example.ui.screens.OsWorldScreen
+import com.example.ui.screens.PermissionsGuideScreen
 import com.example.ui.screens.PersonalityVoiceScreen
+import com.example.ui.screens.PinLockSetupScreen
+import com.example.ui.screens.PrivacyDashboardScreen
 import com.example.ui.screens.ProfilePremiumScreen
+import com.example.ui.screens.PromptLibraryScreen
+import com.example.ui.screens.SafetyConfirmationOverlay
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SocialMapManagerScreen
 import com.example.ui.screens.SplashScreen
+import com.example.ui.screens.ToolsHubScreen
 import com.example.ui.screens.TouchGuardScreen
 import com.example.ui.screens.TriggersHubScreen
 import com.example.ui.screens.TriggersScreen
+import com.example.ui.screens.UmiWorldScreen
+import com.example.ui.screens.VaultScreen
+import com.example.ui.screens.VoiceFocusOverlay
+import com.example.ui.screens.VoiceLiveScreen
 import com.example.ui.screens.WorldModelScreen
-import com.example.ui.theme.BorderDark
-import com.example.ui.theme.CrimsonPrimary
-import com.example.ui.theme.ObsidianDark
-import com.example.ui.theme.StarGold
-import com.example.ui.theme.SurfaceCard
-import com.example.ui.theme.TextGrey
+import com.example.ui.theme.LocalStarThemeTokens
 import com.example.viewmodel.StarSecurityViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
-
-enum class BottomNavTab(val route: String, val label: String, val icon: ImageVector, val tag: String) {
-    HOME("home", "Home", Icons.Default.Home, "bottom_nav_tab_home"),
-    CHAT("chat", "Chat", Icons.Default.ChatBubbleOutline, "bottom_nav_tab_chat"),
-    ORB("orb", "Orb", Icons.Default.Star, "bottom_nav_tab_orb"),
-    TRIGGERS("triggers_tab", "Triggers", Icons.Default.Bolt, "bottom_nav_tab_triggers"),
-    SETTINGS("settings_tab", "Settings", Icons.Default.Settings, "bottom_nav_tab_settings")
-}
 
 @Composable
 fun StarNavigation(viewModel: StarSecurityViewModel) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    val tokens = LocalStarThemeTokens.current
 
-    var currentUser by remember { mutableStateOf(Firebase.auth.currentUser) }
+    var currentUser by remember {
+        mutableStateOf<FirebaseUser?>(
+            try { Firebase.auth.currentUser } catch (_: Exception) { null }
+        )
+    }
     var currentScreen by remember { mutableStateOf("splash") }
-    var currentTab by remember { mutableStateOf(BottomNavTab.HOME) }
     val backStack = remember { mutableStateListOf<String>() }
 
     fun navigateTo(destination: String) {
@@ -108,34 +91,34 @@ fun StarNavigation(viewModel: StarSecurityViewModel) {
     }
 
     fun navigateBack() {
-        if (backStack.isNotEmpty()) {
-            currentScreen = backStack.removeAt(backStack.size - 1)
+        currentScreen = if (backStack.isNotEmpty()) {
+            backStack.removeAt(backStack.size - 1)
         } else {
-            // Default back to active tab base
-            currentScreen = when (currentTab) {
-                BottomNavTab.HOME -> "home"
-                BottomNavTab.CHAT -> "chat"
-                BottomNavTab.ORB -> "orb"
-                BottomNavTab.TRIGGERS -> "triggers_tab"
-                BottomNavTab.SETTINGS -> "settings_tab"
-            }
+            "home"
         }
     }
 
-    // Auth state listener
     DisposableEffect(Unit) {
+        var authInstance: FirebaseAuth? = null
         val listener = FirebaseAuth.AuthStateListener { auth ->
             currentUser = auth.currentUser
             if (auth.currentUser != null) {
                 viewModel.onUserSignedIn(
-                    auth.currentUser?.displayName ?: "Sovereign Commander",
+                    auth.currentUser?.displayName ?: "Dayaram Chouhan",
                     auth.currentUser?.email ?: ""
                 )
             }
         }
-        Firebase.auth.addAuthStateListener(listener)
+        try {
+            authInstance = Firebase.auth
+            authInstance.addAuthStateListener(listener)
+        } catch (_: Exception) {
+            // Firebase optional — offline mode works seamlessly
+        }
         onDispose {
-            Firebase.auth.removeAuthStateListener(listener)
+            try {
+                authInstance?.removeAuthStateListener(listener)
+            } catch (_: Exception) { }
         }
     }
 
@@ -146,28 +129,43 @@ fun StarNavigation(viewModel: StarSecurityViewModel) {
         }
     }
 
-    val isTopLevelDestination = currentScreen in listOf("home", "chat", "orb", "triggers_tab", "settings_tab")
-    val showBottomBar = currentUser != null && currentScreen != "splash" && currentScreen != "auth" && !uiState.isAlarmActive
+    LaunchedEffect(uiState.pendingVoiceNavTarget) {
+        val target = uiState.pendingVoiceNavTarget ?: return@LaunchedEffect
+        viewModel.clearPendingVoiceNav()
+        if (target == "__BACK__") {
+            navigateBack()
+        } else {
+            if (target == "home") backStack.clear()
+            navigateTo(target)
+        }
+    }
+
+    val isAuthenticatedOrSkipped = currentUser != null || uiState.hasSkippedLogin || uiState.isPinConfigured
+    val showDock = currentScreen !in listOf("splash", "auth", "pin_setup", "pin_unlock") &&
+        isAuthenticatedOrSkipped && uiState.isAppUnlocked && !uiState.isAlarmActive && !uiState.isVoiceFocusActive
 
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .background(ObsidianDark),
-        containerColor = ObsidianDark,
+            .background(tokens.background),
+        containerColor = tokens.background,
         bottomBar = {
-            if (showBottomBar) {
-                StarBottomNavigation(
-                    selectedTab = currentTab,
-                    onTabSelected = { tab ->
-                        currentTab = tab
-                        backStack.clear()
-                        currentScreen = when (tab) {
-                            BottomNavTab.HOME -> "home"
-                            BottomNavTab.CHAT -> "chat"
-                            BottomNavTab.ORB -> "orb"
-                            BottomNavTab.TRIGGERS -> "triggers_tab"
-                            BottomNavTab.SETTINGS -> "settings_tab"
+            if (showDock) {
+                SanamFloatingDock(
+                    currentScreen = currentScreen,
+                    isListening = uiState.isWakeWordListening,
+                    onNavigate = { dest ->
+                        if (dest == "home") backStack.clear()
+                        navigateTo(dest)
+                    },
+                    onMicOrbClick = {
+                        viewModel.activateVoiceFocusMic()
+                        if (!uiState.voiceFocusModeEnabled) {
+                            navigateTo("voice_live")
                         }
+                    },
+                    onTripleTapOrb = {
+                        navigateTo("developer_panel")
                     }
                 )
             }
@@ -182,96 +180,261 @@ fun StarNavigation(viewModel: StarSecurityViewModel) {
                 currentScreen == "splash" -> {
                     SplashScreen(
                         onSplashFinished = {
-                            if (currentUser != null) {
-                                currentScreen = "home"
-                                currentTab = BottomNavTab.HOME
-                            } else {
-                                currentScreen = "auth"
+                            currentScreen = when {
+                                uiState.isPinConfigured && !uiState.isAppUnlocked -> "pin_unlock"
+                                currentUser != null || uiState.hasSkippedLogin -> "home"
+                                else -> "auth"
                             }
                         }
                     )
                 }
 
-                currentUser == null || currentScreen == "auth" -> {
+                currentScreen == "auth" || (!isAuthenticatedOrSkipped && currentScreen != "pin_setup") -> {
                     AuthScreen(
                         onAuthSuccess = {
-                            currentUser = Firebase.auth.currentUser
-                            currentScreen = "home"
-                            currentTab = BottomNavTab.HOME
+                            viewModel.completeWelcomeContinue()
+                            if (uiState.isPinConfigured) {
+                                viewModel.unlockWithBiometric()
+                                currentScreen = "home"
+                            } else {
+                                currentScreen = "pin_setup"
+                            }
+                        },
+                        onContinueWithoutLogin = {
+                            viewModel.completeSkipToPinSetup()
+                            currentScreen = "pin_setup"
                         }
                     )
                 }
 
-                // 1. Home Tab: Dashboard with Profile & Premium access
+                currentScreen == "pin_setup" -> {
+                    PinLockSetupScreen(
+                        isSetupMode = true,
+                        fingerprintEnabled = uiState.fingerprintLockEnabled,
+                        failedAttempts = uiState.failedAttempts,
+                        onSetupComplete = { pin, fp ->
+                            val ok = viewModel.setupPinAndUnlock(pin, fp)
+                            if (ok) {
+                                backStack.clear()
+                                currentScreen = "home"
+                            }
+                            ok
+                        },
+                        onUnlockSuccess = { false },
+                        onBiometricUnlocked = {
+                            viewModel.unlockWithBiometric()
+                            currentScreen = "home"
+                        },
+                        onSignOutBackToWelcome = {
+                            viewModel.signOutKeepData()
+                            currentScreen = "auth"
+                        }
+                    )
+                }
+
+                currentScreen == "pin_unlock" || (uiState.isPinConfigured && !uiState.isAppUnlocked) -> {
+                    PinLockSetupScreen(
+                        isSetupMode = false,
+                        fingerprintEnabled = uiState.fingerprintLockEnabled,
+                        failedAttempts = uiState.failedAttempts,
+                        onSetupComplete = { _, _ -> false },
+                        onUnlockSuccess = { pin ->
+                            val ok = viewModel.unlockWithPin(pin)
+                            if (ok) {
+                                backStack.clear()
+                                currentScreen = "home"
+                            }
+                            ok
+                        },
+                        onBiometricUnlocked = {
+                            viewModel.unlockWithBiometric()
+                            backStack.clear()
+                            currentScreen = "home"
+                        },
+                        onSignOutBackToWelcome = {
+                            viewModel.signOutKeepData()
+                            currentScreen = "auth"
+                        }
+                    )
+                }
+
+                // 3. Home
                 currentScreen == "home" -> {
-                    DashboardScreen(
-                        viewModel = viewModel,
-                        onNavigateTo = { dest -> navigateTo(dest) }
-                    )
+                    DashboardScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) })
                 }
 
-                // 2. Chat Tab: ChatList placeholder and security alerts
+                // 4. Chat
                 currentScreen == "chat" -> {
-                    ChatListScreen(
+                    BackHandler { navigateBack() }
+                    ChatListScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 5. Voice Live
+                currentScreen == "voice_live" -> {
+                    BackHandler { navigateBack() }
+                    VoiceLiveScreen(
                         viewModel = viewModel,
+                        onNavigateBack = { navigateBack() },
+                        onTripleTapDev = { navigateTo("developer_panel") }
+                    )
+                }
+
+                // 6. Control Dashboard (Phone 12 + PC 12 + Hardware Controls)
+                currentScreen == "control_dashboard" -> {
+                    BackHandler { navigateBack() }
+                    ControlDashboardScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) }, onNavigateBack = { navigateBack() })
+                }
+
+                // 7. Vault (PIN Pad + Fingerprint + Hidden Files)
+                currentScreen == "vault" -> {
+                    BackHandler { navigateBack() }
+                    VaultScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) }, onNavigateBack = { navigateBack() })
+                }
+
+                // 8. Prompt Library
+                currentScreen == "prompt_library" -> {
+                    BackHandler { navigateBack() }
+                    PromptLibraryScreen(
+                        viewModel = viewModel,
+                        onUsePromptInChat = { navigateTo("chat") },
                         onNavigateBack = { navigateBack() }
                     )
                 }
 
-                // 3. Orb Tab: AuraControlScreen
-                currentScreen == "orb" || currentScreen == "aura_control" -> {
-                    if (!isTopLevelDestination) {
-                        BackHandler { navigateBack() }
-                    }
-                    AuraControlScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
-                }
-
-                // 4. Triggers Tab: TriggersScreen + WorldModelScreen Hub
-                currentScreen == "triggers_tab" || currentScreen == "triggers_hub" -> {
-                    TriggersHubScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
-                }
-
-                // 5. Settings Tab: Hub for AppLock, GF Mode, Touch Guard, Face Setup, API, Notifications
+                // 9. Settings Full Control
                 currentScreen == "settings_tab" || currentScreen == "settings" -> {
-                    SettingsScreen(
-                        viewModel = viewModel,
-                        onNavigateTo = { dest -> navigateTo(dest) }
-                    )
+                    BackHandler { navigateBack() }
+                    SettingsScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) })
                 }
 
-                // Sub-screens with BackHandler
+                // 10. Automation (Triggers +77 & World Model Hub)
+                currentScreen == "triggers_tab" || currentScreen == "triggers_hub" -> {
+                    BackHandler { navigateBack() }
+                    TriggersHubScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+                currentScreen == "triggers" -> {
+                    BackHandler { navigateBack() }
+                    TriggersScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 11. Developer Panel (Triple Tap Orb)
+                currentScreen == "developer_panel" -> {
+                    BackHandler { navigateBack() }
+                    DeveloperPanelScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) }, onNavigateBack = { navigateBack() })
+                }
+
+                // 12. Memory
+                currentScreen == "memory" -> {
+                    BackHandler { navigateBack() }
+                    MemoryScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) }, onNavigateBack = { navigateBack() })
+                }
+
+                // 13. Marketplace (3x3 9 Grid)
+                currentScreen == "marketplace" -> {
+                    BackHandler { navigateBack() }
+                    MarketplaceScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) }, onNavigateBack = { navigateBack() })
+                }
+
+                // 14. Face HUD Studio
+                currentScreen == "face_studio" -> {
+                    BackHandler { navigateBack() }
+                    FaceStudioScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) }, onNavigateBack = { navigateBack() })
+                }
+
+                // 15. Build Protocol
+                currentScreen == "build_protocol" -> {
+                    BackHandler { navigateBack() }
+                    BuildProtocolScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 16. Claude Code
+                currentScreen == "claude_code" -> {
+                    BackHandler { navigateBack() }
+                    ClaudeCodeScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 17. Ghost 10
+                currentScreen == "ghost_world" -> {
+                    BackHandler { navigateBack() }
+                    GhostWorldScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 18. UMI 12
+                currentScreen == "umi_world" -> {
+                    BackHandler { navigateBack() }
+                    UmiWorldScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 19. SANAM OS 9 + SANAM GO 9
+                currentScreen == "os_world" -> {
+                    BackHandler { navigateBack() }
+                    OsWorldScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) }, onNavigateBack = { navigateBack() })
+                }
+
+                // 20. Launcher
+                currentScreen == "launcher" -> {
+                    BackHandler { navigateBack() }
+                    LauncherScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 21. LIA Chat
+                currentScreen == "lia_chat" -> {
+                    BackHandler { navigateBack() }
+                    LiaChatScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 22. FlowShift + dhaibuilds
+                currentScreen == "flow_shift" -> {
+                    BackHandler { navigateBack() }
+                    FlowShiftDhaiScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                // 23. Profile + Preserved Security Modules (Sign-out stays in Profile & preserves data)
                 currentScreen == "profile_premium" -> {
                     BackHandler { navigateBack() }
                     ProfilePremiumScreen(
                         viewModel = viewModel,
                         onNavigateBack = { navigateBack() },
                         onSignedOut = {
+                            viewModel.signOutToGuestKeepData()
                             currentUser = null
-                            currentScreen = "auth"
                         }
                     )
                 }
 
+                currentScreen == "avatar_gallery" -> {
+                    BackHandler { navigateBack() }
+                    AvatarGalleryScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                currentScreen == "tools_hub" -> {
+                    BackHandler { navigateBack() }
+                    ToolsHubScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) }, onNavigateBack = { navigateBack() })
+                }
+
+                currentScreen == "permissions_guide" -> {
+                    BackHandler { navigateBack() }
+                    PermissionsGuideScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                currentScreen == "privacy_dashboard" -> {
+                    BackHandler { navigateBack() }
+                    PrivacyDashboardScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
+                currentScreen == "orb" || currentScreen == "aura_control" -> {
+                    BackHandler { navigateBack() }
+                    AuraControlScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
+                }
+
                 currentScreen == "app_lock" -> {
                     BackHandler { navigateBack() }
-                    AppLockScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    AppLockScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 currentScreen == "gf_mode" -> {
                     BackHandler { navigateBack() }
-                    GfModeScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    GfModeScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 currentScreen == "touch_guard" -> {
@@ -285,140 +448,64 @@ fun StarNavigation(viewModel: StarSecurityViewModel) {
 
                 currentScreen == "face_setup" -> {
                     BackHandler { navigateBack() }
-                    FaceSetupScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    FaceSetupScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 currentScreen == "api_screen" -> {
                     BackHandler { navigateBack() }
-                    ApiScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    ApiScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 currentScreen == "social_map_manager" -> {
                     BackHandler { navigateBack() }
-                    SocialMapManagerScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    SocialMapManagerScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 currentScreen == "notifications" || currentScreen == "notifications_system" -> {
                     BackHandler { navigateBack() }
-                    NotificationsScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    NotificationsScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 currentScreen == "personality_voice" -> {
                     BackHandler { navigateBack() }
-                    PersonalityVoiceScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
-                }
-
-                currentScreen == "triggers" -> {
-                    BackHandler { navigateBack() }
-                    TriggersScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    PersonalityVoiceScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 currentScreen == "world_model" -> {
                     BackHandler { navigateBack() }
-                    WorldModelScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    WorldModelScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 currentScreen == "api_world" -> {
                     BackHandler { navigateBack() }
-                    ApiWorldModelScreen(
-                        viewModel = viewModel,
-                        onNavigateBack = { navigateBack() }
-                    )
+                    ApiWorldModelScreen(viewModel = viewModel, onNavigateBack = { navigateBack() })
                 }
 
                 else -> {
-                    DashboardScreen(
-                        viewModel = viewModel,
-                        onNavigateTo = { dest -> navigateTo(dest) }
-                    )
+                    DashboardScreen(viewModel = viewModel, onNavigateTo = { navigateTo(it) })
                 }
             }
 
-            // High-priority Intruder Alarm Overlay (Stealth breach or armed touch)
+            if (uiState.isVoiceFocusActive) {
+                VoiceFocusOverlay(
+                    viewModel = viewModel,
+                    onVoiceNavRequest = { target ->
+                        if (target == "home") backStack.clear()
+                        navigateTo(target)
+                    }
+                )
+            }
+
+            uiState.pendingConfirmation?.let { req ->
+                SafetyConfirmationOverlay(
+                    request = req,
+                    onAllow = { viewModel.resolvePendingConfirmation(true) },
+                    onDeny = { viewModel.resolvePendingConfirmation(false) }
+                )
+            }
+
             if (uiState.isAlarmActive) {
                 IntruderAlarmOverlayScreen(viewModel = viewModel)
-            }
-        }
-    }
-}
-
-@Composable
-fun StarBottomNavigation(
-    selectedTab: BottomNavTab,
-    onTabSelected: (BottomNavTab) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF101014))
-            .border(1.dp, BorderDark, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-            .padding(horizontal = 8.dp, vertical = 6.dp)
-            .navigationBarsPadding()
-            .testTag("star_bottom_navigation")
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BottomNavTab.values().forEach { tab ->
-                val isSelected = selectedTab == tab
-                val itemColor = if (isSelected) CrimsonPrimary else TextGrey
-
-                Column(
-                    modifier = Modifier
-                        .clickable { onTabSelected(tab) }
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .testTag(tab.tag),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(
-                                if (isSelected) Color(0xFF2A1015) else Color.Transparent,
-                                CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = tab.icon,
-                            contentDescription = tab.label,
-                            tint = itemColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    Text(
-                        text = tab.label,
-                        color = itemColor,
-                        fontSize = 10.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,58 +15,43 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material.icons.filled.RecordVoiceOver
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.SmartToy
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.theme.BorderDark
-import com.example.ui.theme.CrimsonPrimary
-import com.example.ui.theme.ObsidianDark
-import com.example.ui.theme.StarGold
+import com.example.ui.components.InstallApkTopButton
+import com.example.ui.theme.GlassCardColor
+import com.example.ui.theme.LocalStarThemeTokens
+import com.example.ui.theme.NeonBlue
 import com.example.ui.theme.SuccessGreen
-import com.example.ui.theme.SurfaceCard
 import com.example.ui.theme.TextGrey
 import com.example.viewmodel.StarSecurityViewModel
-
-data class ChatMessage(
-    val id: String,
-    val sender: String,
-    val text: String,
-    val time: String,
-    val isSystem: Boolean = false,
-    val icon: ImageVector = Icons.Default.Security
-)
 
 @Composable
 fun ChatListScreen(
@@ -73,68 +59,18 @@ fun ChatListScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val tokens = LocalStarThemeTokens.current
+    val clipboard = LocalClipboardManager.current
+    val context = LocalContext.current
     var messageText by remember { mutableStateOf("") }
-
-    val messages = remember {
-        mutableStateListOf(
-            ChatMessage(
-                id = "1",
-                sender = "CHOUHAN STAR AI",
-                text = "॥ JAI SHRI RAM ॥ Commander! System is armed and local encrypted vault is active.",
-                time = "Just now",
-                isSystem = true,
-                icon = Icons.Default.SmartToy
-            ),
-            ChatMessage(
-                id = "2",
-                sender = "Touch Guard Alert",
-                text = "Gyroscope & Accelerometer armed at 100% volume.",
-                time = "2m ago",
-                isSystem = true,
-                icon = Icons.Default.Security
-            ),
-            ChatMessage(
-                id = "3",
-                sender = "GF Mode Engine",
-                text = "Scold line loaded: \"${uiState.securityConfig.gfScoldText}\"",
-                time = "5m ago",
-                isSystem = false,
-                icon = Icons.Default.RecordVoiceOver
-            ),
-            ChatMessage(
-                id = "4",
-                sender = "App Lock Manager",
-                text = "${uiState.lockedApps.count { it.isLocked }} apps guarded with PIN & Biometric.",
-                time = "10m ago",
-                isSystem = false,
-                icon = Icons.Default.Lock
-            )
-        )
-    }
-
-    androidx.compose.runtime.LaunchedEffect(uiState.wakeWordTriggerCount) {
-        if (uiState.wakeWordTriggerCount > 0 && uiState.myraResponseText != null) {
-            messages.add(
-                ChatMessage(
-                    id = System.currentTimeMillis().toString(),
-                    sender = "Myra Voice AI",
-                    text = uiState.myraResponseText ?: "Wake word 'Hey Myra' detected.",
-                    time = "Just now",
-                    isSystem = true,
-                    icon = Icons.Default.RecordVoiceOver
-                )
-            )
-        }
-    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ObsidianDark)
-            .padding(16.dp)
+            .background(tokens.background)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
             .testTag("chat_list_screen")
     ) {
-        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -142,180 +78,161 @@ fun ChatListScreen(
         ) {
             Column {
                 Text(
-                    text = "Security Chat & Alerts",
-                    color = Color.White,
+                    text = "ZARA & SANAM Chat",
+                    color = tokens.onBackgroundText,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "End-to-End local communication hub",
-                    color = TextGrey,
+                    text = "Shared Multi-Agent Memory • ${uiState.detectedLanguage}",
+                    color = tokens.mutedText,
                     fontSize = 12.sp
                 )
             }
-
-            Box(
-                modifier = Modifier
-                    .background(Color(0xFF142B1B), RoundedCornerShape(12.dp))
-                    .border(1.dp, SuccessGreen.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(6.dp).background(SuccessGreen, CircleShape))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Online", color = SuccessGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFF102818), RoundedCornerShape(10.dp))
+                        .border(1.dp, SuccessGreen.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 8.dp, vertical = 5.dp)
+                ) {
+                    Text(
+                        text = if (uiState.isOfflineMode) "Offline AI" else "Online",
+                        color = SuccessGreen,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+                InstallApkTopButton(onClick = { viewModel.exportApkAction() })
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Message Feed
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(messages) { msg ->
-                Card(
+            items(uiState.chatMessages, key = { it.id }) { msg ->
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (msg.isSystem) Color(0xFF221115) else SurfaceCard
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        if (msg.isSystem) CrimsonPrimary.copy(alpha = 0.3f) else BorderDark
-                    )
+                    horizontalArrangement = if (msg.isUser) Arrangement.End else Arrangement.Start
                 ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    if (msg.isSystem) Color(0xFF381014) else Color(0xFF22222E),
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = msg.icon,
-                                contentDescription = null,
-                                tint = if (msg.isSystem) CrimsonPrimary else StarGold,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = msg.sender,
-                                    color = Color.White,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
+                    Column(
+                        modifier = Modifier
+                            .widthIn(max = 290.dp)
+                            .background(
+                                color = if (msg.isUser) NeonBlue.copy(alpha = 0.25f) else GlassCardColor,
+                                shape = RoundedCornerShape(
+                                    topStart = 16.dp,
+                                    topEnd = 16.dp,
+                                    bottomStart = if (msg.isUser) 16.dp else 4.dp,
+                                    bottomEnd = if (msg.isUser) 4.dp else 16.dp
                                 )
-                                Text(
-                                    text = msg.time,
-                                    color = TextGrey,
-                                    fontSize = 10.sp
+                            )
+                            .border(
+                                1.dp,
+                                if (msg.isUser) NeonBlue else Color(0xFF2B2B44),
+                                RoundedCornerShape(
+                                    topStart = 16.dp,
+                                    topEnd = 16.dp,
+                                    bottomStart = if (msg.isUser) 16.dp else 4.dp,
+                                    bottomEnd = if (msg.isUser) 4.dp else 16.dp
+                                )
+                            )
+                            .padding(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = msg.senderName,
+                                color = if (msg.isUser) NeonBlue else Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = msg.timestamp, color = TextGrey, fontSize = 10.sp)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copy message",
+                                    tint = TextGrey,
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .clickable {
+                                            clipboard.setText(AnnotatedString(msg.text))
+                                            Toast.makeText(context, "Copied!", Toast.LENGTH_SHORT).show()
+                                        }
                                 )
                             }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = msg.text,
-                                color = Color(0xFFE0E0E0),
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp
-                            )
                         }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = msg.text,
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            lineHeight = 19.sp
+                        )
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Message Input Field
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 78.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
                 value = messageText,
                 onValueChange = { messageText = it },
-                placeholder = { Text("Ask security guard or note status...", color = TextGrey, fontSize = 12.sp) },
+                placeholder = { Text("Boliye ya likhiye ZARA ke liye...", color = TextGrey, fontSize = 12.sp) },
                 modifier = Modifier
                     .weight(1f)
                     .testTag("chat_input_field"),
                 shape = RoundedCornerShape(24.dp),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = BorderDark,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    focusedContainerColor = SurfaceCard,
-                    unfocusedContainerColor = SurfaceCard
+                    focusedBorderColor = NeonBlue,
+                    unfocusedBorderColor = Color(0xFF2B2B44),
+                    focusedTextColor = tokens.onBackgroundText,
+                    unfocusedTextColor = tokens.onBackgroundText,
+                    focusedContainerColor = GlassCardColor,
+                    unfocusedContainerColor = GlassCardColor
                 )
             )
-
             Spacer(modifier = Modifier.width(8.dp))
-
             IconButton(
-                onClick = {
-                    viewModel.simulateWakeWord("Hey Myra")
-                },
+                onClick = { viewModel.simulateWakeWord("Hey Sanam", "status report") },
                 modifier = Modifier
                     .size(48.dp)
-                    .background(if (uiState.isWakeWordListening) CrimsonPrimary else Color(0xFF252530), CircleShape)
+                    .background(Color(0xFF1F223D), CircleShape)
                     .testTag("chat_mic_wake_button")
             ) {
-                Icon(
-                    imageVector = Icons.Default.Mic,
-                    contentDescription = "Hey Myra Wake Word",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
+                Icon(imageVector = Icons.Default.Mic, contentDescription = "Hey Sanam Wake Word", tint = NeonBlue)
             }
-
             Spacer(modifier = Modifier.width(6.dp))
-
             IconButton(
                 onClick = {
                     if (messageText.isNotBlank()) {
-                        messages.add(
-                            ChatMessage(
-                                id = System.currentTimeMillis().toString(),
-                                sender = "Commander",
-                                text = messageText,
-                                time = "Now",
-                                isSystem = false,
-                                icon = Icons.Default.NotificationsActive
-                            )
-                        )
+                        viewModel.sendChatMessage(messageText)
                         messageText = ""
                     }
                 },
                 modifier = Modifier
                     .size(48.dp)
-                    .background(CrimsonPrimary, CircleShape)
+                    .background(NeonBlue, CircleShape)
                     .testTag("chat_send_button")
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Send",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
+                Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.Black)
             }
         }
     }

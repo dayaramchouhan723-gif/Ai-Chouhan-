@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">CHOUHAN STAR</string>
+    <string name="calculator_alias_name">Calculator</string>
+    <string name="accessibility_service_description">CHOUHAN STAR Assistant tap automation &amp; sensitive action guard (Pay/Send/Delete confirmation)</string>
 </resources>
